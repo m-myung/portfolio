@@ -695,7 +695,12 @@
         color: #333 !important; border-radius: 1px !important;
       }
     }
-  </style>
+      /* ── Type consistency ── */
+    .principle h3, .work-card-header h3 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; color: var(--fg); }
+    .section-label, .work-tag, .changes-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+    .skills-group-label, .change-name, .built b { font-size: 0.66rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .work-tag { letter-spacing: 0.08em; }
+</style>
 </head>
 <body>
 
@@ -798,7 +803,7 @@
       accurate, and useful to the people running the shift.
     </p>
     <p class="summary-text fade-in">
-      Over the past few years I've taken on more of the technical side, building automations that replace
+      Over the past few years, I've taken on more of the technical side, building automations that replace
       manual, repetitive work: scripts that turn workforce and payroll data into finished reports, browser-based
       apps for forecasting and payroll auditing, and workflows in Power Automate, Power Apps, and SharePoint.
       I use AI-assisted development to design, build, and test them, which lets me deliver working tools without
@@ -811,31 +816,31 @@
 <section id="approach">
   <div class="container">
     <p class="section-label">Strengths</p>
-    <h2 class="section-title fade-in">What I bring</h2>
+    <h2 class="section-title fade-in">What I Bring</h2>
     <div class="principles-grid">
       <div class="principle fade-in">
         <span class="principle-number">01</span>
-        <h3>Solutions-focused</h3>
+        <h3>Solutions-Focused</h3>
         <p>I start with the problem, not the tool, and look for the simplest fix that people will actually use. Sometimes that's a new process; sometimes it's an app.</p>
         <p class="principle-eg"><span>For example:</span> the LA ordinance report went from 4–5 hours a day by hand to a few minutes, and the F&amp;B forecast went from a fragile spreadsheet to visual dashboards 12 managers check daily.</p>
       </div>
       <div class="principle fade-in">
         <span class="principle-number">02</span>
-        <h3>Systems builder</h3>
-        <p>When there's no system, I build one. In operations that meant setting up departments, standards and training from scratch. Today it means turning manual, one-off processes into tools the whole team can rely on.</p>
+        <h3>Systems Builder</h3>
+        <p>When there's no system, I build one. In operations, that meant setting up departments, standards, and training from scratch. Today it means turning manual, one-off processes into tools the whole team can rely on.</p>
         <p class="principle-eg"><span>For example:</span> I built the Housekeeping department from the ground up for a 400-room pre-opening. More recently, I replaced managers' separate certification spreadsheets with one shared tracker and automatic weekly alerts.</p>
       </div>
       <div class="principle fade-in">
         <span class="principle-number">03</span>
-        <h3>Develops leaders</h3>
+        <h3>Develops Leaders</h3>
         <p>I like helping people grow into their next role, and I plan for it the same way I plan anything else.</p>
         <p class="principle-eg"><span>For example:</span> I hired and coached 6 leaders over a team of 70 during a pre-opening, wrote career plans for 11 department leaders, and ran training and development for a luxury hotel.</p>
       </div>
       <div class="principle fade-in">
         <span class="principle-number">04</span>
-        <h3>Operator first</h3>
-        <p>15+ years running hotel departments, including budgets and P&amp;L, means I build for the people on the floor, not just the spreadsheet.</p>
-        <p class="principle-eg"><span>For example:</span> I've worked across housekeeping, front office, rooms, training and events at Montage, Fairmont, InterContinental and Hilton.</p>
+        <h3>Operator First</h3>
+        <p>With 15+ years running hotel departments, including budgets and P&amp;L, I build for the people on the floor, not just the spreadsheet.</p>
+        <p class="principle-eg"><span>For example:</span> I've worked across housekeeping, front office, rooms, training, and events at Montage, Fairmont, InterContinental, and Hilton.</p>
       </div>
     </div>
   </div>
@@ -848,7 +853,7 @@
     <h2 class="section-title fade-in">Projects</h2>
     <p class="summary-text fade-in" style="margin-bottom:32px">Tools I've built for the hotels I support. Each demo below is a stand-alone recreation with a fictional hotel and sample data, so you can click through how it works. I build them with AI-assisted development and test them against real reports before they go live.</p>
     <div class="changes fade-in">
-      <p class="changes-label">Before and after</p>
+      <p class="changes-label">Before and After</p>
       <a class="change" href="#proj-ordinance">
       <span class="change-name">LA Ordinance Report</span>
       <span class="change-before">4–5 hours a day by hand</span>
@@ -856,13 +861,13 @@
       <span class="change-after">a few minutes</span>
     </a>
       <a class="change" href="#proj-fnb">
-      <span class="change-name">F&amp;B forecast</span>
+      <span class="change-name">F&amp;B Forecast</span>
       <span class="change-before">a fragile spreadsheet</span>
       <span class="change-arrow" aria-hidden="true">→</span>
       <span class="change-after">an app 12 managers use daily</span>
     </a>
       <a class="change" href="#proj-labor">
-      <span class="change-name">Labor reports</span>
+      <span class="change-name">Labor Reports</span>
       <span class="change-before">built by hand every morning</span>
       <span class="change-arrow" aria-hidden="true">→</span>
       <span class="change-after">automated, email ready</span>
@@ -894,7 +899,7 @@
           <div>
             <span class="work-tag">Live Demo · Sample Data</span>
             <h3>LA Hotel Worker Ordinance Generator</h3>
-            <p>Los Angeles requires hotels to track each room attendant's daily workload and pay extra when they go over the city's limits. That meant someone spent 4–5 hours every day matching housekeeping reports against timecards by hand.</p><p style="margin-top:10px">I built a browser tool that does it in minutes: drop in the three daily reports, and it works out each attendant's rooms, square footage and pay, double-checks the math, and flags anything that doesn't line up. It saves more than 1,000 hours a year.</p>
+            <p>Los Angeles requires hotels to track each room attendant's daily workload and pay extra when they go over the city's limits. That meant someone spent 4–5 hours every day matching housekeeping reports against timecards by hand.</p><p style="margin-top:10px">I built a browser tool that does it in minutes: drop in the three daily reports, and it works out each attendant's rooms, square footage, and pay, double-checks the math, and flags anything that doesn't line up. It saves more than 1,000 hours a year.</p>
           <div class="built"><b>Built with</b><span>HTML</span><span>JavaScript</span><span>Excel import/export (SheetJS, ExcelJS)</span><span>PDF parsing (PDF.js)</span><span>Runs in the browser, no server</span></div>
           </div>
           <a href="ordinance.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
@@ -906,7 +911,7 @@
           <div>
             <span class="work-tag">Simulated Run · Sample Data</span>
             <h3>Daily &amp; Weekly Labor Report Automation</h3>
-            <p>Every morning someone had to pull labor data from the workforce system, paste it into the report template, save a PDF and email it out.</p><p style="margin-top:10px">Now a script does the whole run on its own and leaves an email draft ready to send. The weekly report alone saves 35+ hours a year, and a configurable version lets other hotels run the daily report too.</p>
+            <p>Every morning, someone had to pull labor data from the workforce system, paste it into the report template, save a PDF, and email it out.</p><p style="margin-top:10px">Now a script does the whole run on its own and leaves an email draft ready to send. The weekly report alone saves 35+ hours a year, and a configurable version lets other hotels run the daily report too.</p>
           <div class="built"><b>Built with</b><span>Python</span><span>Selenium</span><span>Playwright</span><span>Excel automation</span><span>Outlook</span><span>Batch scripts</span></div>
           </div>
           <a href="labor-report.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
@@ -985,13 +990,13 @@
           <span class="role-dates">Jun 2024 – Present</span>
         </div>
         <ul>
-          <li>Own labor forecasting, scheduling and payroll-to-budget reporting for Hilton Anaheim (~1,570 rooms) and Hilton Los Angeles Airport (1,234 rooms), helping department heads align staffing with demand.</li>
+          <li>Own labor forecasting, scheduling, and payroll-to-budget reporting for Hilton Anaheim (~1,570 rooms) and Hilton Los Angeles Airport (1,234 rooms), helping department heads align staffing with demand.</li>
           <li>Built an LA Hotel Worker Ordinance generator that combines three source reports and runs 9 validation checks, turning a 4–5 hour daily task into minutes and saving 1,000+ hours a year.</li>
           <li>Automated daily and weekly labor reporting, turning UniFocus and Oracle data into finished Excel and PDF reports; the weekly report alone saves 35+ hours a year, and a configurable version lets other properties run the daily report.</li>
           <li>Replaced a complex, multi-tab Excel forecast with an easy-to-use F&amp;B forecasting app, now used by 12 managers across 6 outlets, with visual dashboards and a Power Apps mobile version.</li>
           <li>Built a culinary pre-sheet builder that saves 100+ hours a year, plus a banquet gratuity balancing tool.</li>
-          <li>Created California meal break, attestation and benefits enrollment audits to catch payroll compliance issues early.</li>
-          <li>Use AI-assisted development to design, build and test these tools without a dedicated engineering team.</li>
+          <li>Created California meal break, attestation, and benefits enrollment audits to catch payroll compliance issues early.</li>
+          <li>Use AI-assisted development to design, build, and test these tools without a dedicated engineering team.</li>
         </ul>
       </div>
     </div>
@@ -1009,7 +1014,7 @@
         <ul>
           <li>Worked between sales and catering to get more use and revenue out of the function space, and standardized how group contracts and BEOs were handled.</li>
           <li>Took care of clients from signed contract through final bill. At least one client rebooked and brought us an additional group.</li>
-          <li>Ran food and beverage operations day to day alongside servers, bartenders and the culinary team.</li>
+          <li>Ran food and beverage operations day to day alongside servers, bartenders, and the culinary team.</li>
           <li>Set up a wine and spirits inventory system with proper par levels, which cut stockouts and cost of goods. Other departments later adopted it.</li>
           <li>Built a shared resource hub in Asana so new hires could get up to speed faster and existing staff could learn the tools we used.</li>
           <li>Created the company's goal-setting framework for 2023 from scratch, with a simple way to track progress. It was later rolled out to all locations.</li>
@@ -1032,7 +1037,7 @@
           <li>Redesigned onboarding so new hires got better content, a better first week, and got comfortable in their roles sooner.</li>
           <li>Worked with department heads and executives to find where training was missing and focus it on what the hotel needed.</li>
           <li>Taught leadership development sessions, in person and online, for leaders at hotels across North and Central America.</li>
-          <li>Built the 2023 Training &amp; Development budget, covering recruiting, benefits and employee relations.</li>
+          <li>Built the 2023 Training &amp; Development budget, covering recruiting, benefits, and employee relations.</li>
           <li>Rolled out a new internal communications platform at two hotels at the same time, replacing several scattered tools with one.</li>
           <li>Helped regional leadership spot high-potential people and figure out who was ready for the next step.</li>
         </ul>
@@ -1051,7 +1056,7 @@
           <li>Launched preventative maintenance routines for public spaces and guest rooms.</li>
           <li>Taught leaders how to forecast their P&amp;L and prepare for monthly financial reviews, and cleaned up the Excel reports so the numbers were consistent month to month.</li>
           <li>Worked with an outside vendor on phone training for reservations agents, which raised booking conversion and upsell revenue.</li>
-          <li>Served on the safety, emergency preparedness and sustainability committees.</li>
+          <li>Served on the safety, emergency preparedness, and sustainability committees.</li>
         </ul>
       </div>
 
@@ -1062,12 +1067,12 @@
         </div>
         <ul>
           <li>Part of the pre-opening team for a property with 400 guest rooms, 63 branded residences, 25,000 sq. ft. of event space and a 14,000 sq. ft. spa.</li>
-          <li>Built the Housekeeping department from scratch: the team, the systems and the day-to-day processes.</li>
-          <li>Hired and trained 6 leaders who managed a team of 70, and wrote the job descriptions, onboarding and career plans.</li>
-          <li>Wrote the training manuals, SOPs and standards for Housekeeping, Laundry and overnight cleaning.</li>
+          <li>Built the Housekeeping department from scratch: the team, the systems, and the day-to-day processes.</li>
+          <li>Hired and trained 6 leaders who managed a team of 70, and wrote the job descriptions, onboarding, and career plans.</li>
+          <li>Wrote the training manuals, SOPs, and standards for Housekeeping, Laundry, and overnight cleaning.</li>
           <li>Brought in RFID tracking for uniforms and linen.</li>
-          <li>Reworked the OS&amp;E budget, supplies and SOPs when COVID-19 changed how we had to clean.</li>
-          <li>Worked with contractors, project managers and designers in Bluebeam to get rooms turned over correctly and on time.</li>
+          <li>Reworked the OS&amp;E budget, supplies, and SOPs when COVID-19 changed how we had to clean.</li>
+          <li>Worked with contractors, project managers, and designers in Bluebeam to get rooms turned over correctly and on time.</li>
           <li>Handled purchasing and receiving with the procurement team, keeping an eye on vendors and costs.</li>
         </ul>
       </div>
@@ -1087,7 +1092,7 @@
           <li>Led housekeeping and the in-house laundry for a 202-room Forbes Five-Star hotel.</li>
           <li>Used past data to rebalance room attendant workloads, improving productivity by 0.08 hours per room.</li>
           <li>Fixed how guest incidents were tracked and reported, so issues were logged the same way every time and resolved faster.</li>
-          <li>Built a productivity dashboard for output, wages, budget and cost per occupied room that we used in P&amp;L reviews, forecasting and budgeting.</li>
+          <li>Built a productivity dashboard for output, wages, budget, and cost per occupied room that we used in P&amp;L reviews, forecasting, and budgeting.</li>
         </ul>
       </div>
     </div>
@@ -1122,7 +1127,7 @@
           <span class="role-dates">Jan 2016 – Jul 2017</span>
         </div>
         <ul>
-          <li>Managed labor, productivity and budget while holding to Montage and hotel-rating service standards.</li>
+          <li>Managed labor, productivity, and budget while holding to Montage and hotel-rating service standards.</li>
           <li>Helped plan and run a $5M soft-goods renovation across several departments.</li>
           <li>Prepared the department's monthly, quarterly and year-end financials for the executive committee.</li>
           <li>Spent 8 weeks on task force at Montage Palmetto Bluff while it rebranded and added a 150-room hotel.</li>
@@ -1233,7 +1238,7 @@
       <div class="skills-grid">
         <span class="skill-tag">Opera PMS</span>
         <span class="skill-tag">HotSOS / HotSOS Mobile</span>
-        <span class="skill-tag">OnTrack &amp; Unifocus</span>
+        <span class="skill-tag">OnTrack &amp; UniFocus</span>
         <span class="skill-tag">Bluebeam</span>
       </div>
     </div>
@@ -1266,7 +1271,7 @@
 <section id="contact">
   <div class="contact-inner fade-in">
     <p class="section-label">Get in Touch</p>
-    <h2 class="contact-heading">Open to new opportunities.</h2>
+    <h2 class="contact-heading">Open to New Opportunities</h2>
     <p class="contact-sub">
       I'm especially interested in work that brings workforce analytics, automation, and AI together.
       If that sounds like your team, I'd love to connect.
