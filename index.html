@@ -204,39 +204,38 @@
     }
     .chip:hover { background: rgba(196,162,106,0.28); color: rgba(255,255,255,0.88); }
 
-    /* ── STATS ── */
+    /* ── WHAT CHANGED ── */
     #stats {
       background: var(--ink);
-      padding: 0 2.5rem;
+      padding: 2.25rem 2.5rem 2.5rem;
       border-top: 1px solid rgba(196,162,106,0.12);
     }
-    .stats-inner {
-      max-width: 860px; margin: 0 auto;
-      display: grid; grid-template-columns: repeat(4,1fr);
-      border-left: 1px solid rgba(196,162,106,0.12);
+    .changes-inner { max-width: 860px; margin: 0 auto; }
+    .work-card { scroll-margin-top: 90px; }
+    .changes-label {
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+      color: #d8b77c; margin-bottom: 0.75rem;
     }
-    .stat {
-      padding: 2.5rem 2rem;
-      border-right: 1px solid rgba(196,162,106,0.12);
-      transition: background 0.2s;
+    .change {
+      display: grid; grid-template-columns: 180px 1fr auto 1fr; align-items: baseline; gap: 1rem;
+      padding: 0.95rem 0; border-top: 1px solid rgba(196,162,106,0.12);
+      text-decoration: none; color: inherit; transition: background 0.2s;
     }
-    .stat:hover { background: rgba(196,162,106,0.04); }
-    .stat-number {
-      display: block;
-      font-size: 2.2rem; font-weight: 700;
-      color: var(--gold); letter-spacing: -0.04em;
-      line-height: 1; margin-bottom: 0.5rem;
+    .change:last-child { border-bottom: 1px solid rgba(196,162,106,0.12); }
+    .change:hover .change-after { text-decoration: underline; text-underline-offset: 4px; }
+    .change-name { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+    .change-before { font-size: 1rem; color: rgba(255,255,255,0.55); }
+    .change-arrow { color: var(--gold); font-size: 1.1rem; }
+    .change-after { font-size: 1.15rem; font-weight: 600; color: var(--gold); letter-spacing: -0.01em; }
+    @media (max-width: 720px) {
+      #stats { padding: 1.75rem 1.25rem 2rem; }
+      .change { grid-template-columns: auto 1fr; row-gap: 0.25rem; column-gap: 0.6rem; }
+      .change-name { grid-column: 1 / -1; }
+      .change-before { grid-column: 1 / -1; }
+      .change-arrow { grid-column: 1; }
+      .change-after { grid-column: 2; }
     }
-    .stat-label {
-      display: block;
-      font-size: 0.7rem; font-weight: 500;
-      color: rgba(255,255,255,0.4);
-      letter-spacing: 0.08em; text-transform: uppercase;
-      line-height: 1.5;
-    }
-    @media (max-width: 640px) {
-      .stats-inner { grid-template-columns: repeat(2,1fr); }
-    }
+
 
     /* ── SECTIONS ── */
     section { padding: 110px 2.5rem; }
@@ -530,10 +529,6 @@
       .hero-contact { gap: 1.1rem; flex-direction: column; }
 
       /* Stats */
-      #stats { padding: 0; }
-      .stat { padding: 1.6rem 1.25rem; }
-      .stat-number { font-size: 1.75rem; }
-      .stat-label { font-size: 0.65rem; }
 
       /* Sections */
       section { padding: 65px 1.5rem; }
@@ -558,7 +553,6 @@
 
     @media (max-width: 400px) {
       .hero h1 { letter-spacing: -0.03em; }
-      .stat-number { font-size: 1.5rem; }
       .cta-button { padding: 0.8rem 1.5rem; font-size: 0.72rem; }
     }
 
@@ -792,25 +786,28 @@
   </div>
 </section>
 
-<!-- STATS -->
+<!-- WHAT CHANGED -->
 <div id="stats">
-  <div class="stats-inner">
-    <div class="stat fade-in">
-      <span class="stat-number">15+</span>
-      <span class="stat-label">Years in Hospitality</span>
-    </div>
-    <div class="stat fade-in">
-      <span class="stat-number">$64M+</span>
-      <span class="stat-label">Labor Budget Managed</span>
-    </div>
-    <div class="stat fade-in">
-      <span class="stat-number">1,000+</span>
-      <span class="stat-label">Hours Saved per Year</span>
-    </div>
-    <div class="stat fade-in">
-      <span class="stat-number">6+</span>
-      <span class="stat-label">Tools Built &amp; in Use</span>
-    </div>
+  <div class="changes-inner">
+    <p class="changes-label fade-in">What changed</p>
+    <a class="change fade-in" href="#proj-ordinance">
+      <span class="change-name">LA Ordinance Report</span>
+      <span class="change-before">4–5 hours a day by hand</span>
+      <span class="change-arrow" aria-hidden="true">→</span>
+      <span class="change-after">a few minutes</span>
+    </a>
+    <a class="change fade-in" href="#proj-fnb">
+      <span class="change-name">F&amp;B forecast</span>
+      <span class="change-before">a fragile spreadsheet</span>
+      <span class="change-arrow" aria-hidden="true">→</span>
+      <span class="change-after">an app 12 managers use daily</span>
+    </a>
+    <a class="change fade-in" href="#proj-labor">
+      <span class="change-name">Labor reports</span>
+      <span class="change-before">built by hand every morning</span>
+      <span class="change-arrow" aria-hidden="true">→</span>
+      <span class="change-after">automated, email ready</span>
+    </a>
   </div>
 </div>
 
@@ -878,7 +875,7 @@
     <p class="summary-text fade-in" style="margin-bottom:32px">Tools I've built for the hotels I support. Each demo below is a stand-alone recreation with a fictional hotel and sample data, so you can click through how it works.</p>
     <div class="work-grid">
 
-      <div class="work-card fade-in">
+      <div class="work-card fade-in" id="proj-fnb">
         <div class="work-card-header">
           <div>
             <span class="work-tag">Live Demo · Sample Data</span>
@@ -895,7 +892,7 @@
       </div>
 
       <div class="work-pair">
-      <div class="work-card fade-in">
+      <div class="work-card fade-in" id="proj-ordinance">
         <a class="work-shot single" href="ordinance.html" target="_blank"><img src="img-ordinance.jpg" alt="Ordinance generator after running validation checks, with payroll summary (sample data)" loading="lazy"></a>
         <div class="work-card-header">
           <div>
@@ -906,7 +903,7 @@
           <a href="ordinance.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
         </div>
       </div>
-      <div class="work-card fade-in">
+      <div class="work-card fade-in" id="proj-labor">
         <a class="work-shot single" href="labor-report.html" target="_blank"><img src="img-labor-report.jpg" alt="Labor report automation run log and finished report preview (sample data)" loading="lazy"></a>
         <div class="work-card-header">
           <div>
