@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meal Break Audit Demo</title>
+<link rel="stylesheet" href="demo.css">
+</head>
+<body>
+<div class="top">
+  <span class="brand">Sample Hotel</span>
+  <span class="title">Meal Break &amp; Attestation Audit</span>
+  <span class="badge">Demo · sample data</span>
+</div>
+<div class="wrap">
+  <div class="note">A demo of the payroll compliance audit with made-up timecards. It checks simplified, illustrative California-style rules: shifts over 5 hours need a meal break of at least 30 minutes that starts before the end of hour 5, unless the employee attested to waiving it. This is not legal guidance.</div>
+  <div class="grid kpis">
+    <div class="card kpi"><div class="label">Shifts audited</div><div class="value" id="k1"></div></div>
+    <div class="card kpi"><div class="label">Compliant</div><div class="value" id="k2" style="color:var(--good)"></div></div>
+    <div class="card kpi"><div class="label">Need review</div><div class="value" id="k3" style="color:var(--bad)"></div></div>
+    <div class="card kpi"><div class="label">Covered by waiver</div><div class="value" id="k4"></div></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <h2 style="margin:0">Timecard audit</h2>
+      <div class="row"><label class="muted" style="font-size:13px">Show <select id="f"><option value="all">All shifts</option><option value="issue">Needs review</option><option value="ok">Compliant</option></select></label></div>
+    </div>
+    <div class="table-wrap"><table id="t"></table></div>
+  </div>
+  <p class="foot">Portfolio demo by Martin Myung · sample data only · <a href="index.html#work">Back to portfolio</a></p>
+</div>
+<script>
+// name, dept, in, mealOut, mealIn, out, waiver
+const SHIFTS = [
+  ['J. Alvarez','Housekeeping','07:00','11:30','12:00','15:30',false],
+  ['M. Brooks','Front Office','06:30','12:05','12:35','15:00',false],
+  ['S. Tran','Kitchen','10:00','13:00','13:20','18:30',false],
+  ['R. Haddad','Banquets','14:00','','','18:45',true],
+  ['L. Mendoza','Restaurant','11:00','','','17:30',false],
+  ['T. Wright','Engineering','07:00','11:00','11:30','15:30',false],
+  ['P. Lopez','Housekeeping','08:00','12:45','13:15','16:30',false],
+  ['K. Johnson','Security','22:00','02:00','02:30','06:30',false],
+  ['D. Park','Banquets','15:00','19:30','20:00','23:00',false],
+  ['N. Ortiz','Kitchen','06:00','10:30','10:55','14:30',false],
+  ['A. Singh','Guest Services','09:00','','','13:30',false],
+  ['V. Russo','Restaurant','16:00','','','21:30',true],
+];
+const mins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+const span = (a, b) => { let d = mins(b) - mins(a); return d < 0 ? d + 1440 : d; };
+const hm = m => `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
+const rows = SHIFTS.map(([name, dept, tin, mo, mi, tout, waiver]) => {
+  const total = span(tin, tout); const meal = mo ? span(mo, mi) : 0; const start = mo ? span(tin, mo) : null;
+  let status = 'ok', note = 'Compliant';
+  if (total <= 300) note = 'Under 5 hours — no meal required';
+  else if (!mo && waiver && total <= 360) { status = 'waiver'; note = 'No meal — waiver on file (≤ 6 hrs)'; }
+  else if (!mo) { status = 'issue'; note = 'Missed meal break'; }
+  else if (start > 300) { status = 'issue'; note = `Late meal — started after ${hm(start)}`; }
+  else if (meal < 30) { status = 'issue'; note = `Short meal — ${meal} min`; }
+  return { name, dept, tin, tout, mo, mi, total, meal, status, note };
+});
+const $ = id => document.getElementById(id);
+$('k1').textContent = rows.length; $('k2').textContent = rows.filter(r => r.status === 'ok').length;
+$('k3').textContent = rows.filter(r => r.status === 'issue').length; $('k4').textContent = rows.filter(r => r.status === 'waiver').length;
+function draw() {
+  const f = $('f').value;
+  const list = rows.filter(r => f === 'all' || (f === 'issue' ? r.status === 'issue' : r.status !== 'issue'));
+  $('t').innerHTML = '<tr><th>Employee</th><th>Dept</th><th>In</th><th>Meal</th><th>Out</th><th class="num">Hours</th><th>Result</th></tr>' +
+    list.map(r => `<tr><td>${r.name}</td><td>${r.dept}</td><td>${r.tin}</td><td>${r.mo ? `${r.mo}–${r.mi} <span class="muted">(${r.meal}m)</span>` : '<span class="muted">none</span>'}</td><td>${r.tout}</td><td class="num">${hm(r.total)}</td>
+      <td><span class="pill ${r.status === 'issue' ? 'bad' : r.status === 'waiver' ? 'neutral' : 'good'}">${r.note}</span></td></tr>`).join('');
+}
+$('f').onchange = draw; draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F&amp;B Forecast Demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .two { grid-template-columns: 2fr 1fr; }
+  @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+  .bar-row { display: grid; grid-template-columns: 120px 1fr 70px; gap: 8px; align-items: center; margin: 8px 0; font-size: 13px; }
+  .bar-track { background: var(--line); border-radius: 4px; height: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .adj input { width: 80px; text-align: right; }
+  .delta-up { color: var(--good); } .delta-down { color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="brand">Sample Hotel</span>
+  <span class="title">F&amp;B Forecast</span>
+  <span class="badge">Demo · sample data</span>
+</div>
+<div class="wrap">
+  <div class="note">This demo shows how the forecast app works, using a fictional 420-room hotel and made-up numbers. Past days show actuals; future days show the forecast. Try the <b>Adjust</b> tab to change a day and watch the totals update.</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="adjust">Adjust</button>
+  </div>
+
+  <section id="tab-overview">
+    <div class="grid kpis">
+      <div class="card kpi"><div class="label">Month forecast</div><div class="value" id="k-total"></div><div class="sub" id="k-total-sub"></div></div>
+      <div class="card kpi"><div class="label">Actual to date</div><div class="value" id="k-mtd"></div><div class="sub" id="k-mtd-sub"></div></div>
+      <div class="card kpi"><div class="label">Forecast covers</div><div class="value" id="k-cov"></div><div class="sub">Restaurant, lounge, in-room</div></div>
+      <div class="card kpi"><div class="label">Avg occupancy</div><div class="value" id="k-occ"></div><div class="sub">Sample month</div></div>
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h2>Daily revenue — actual vs. forecast</h2>
+        <svg class="chart" id="daily" viewBox="0 0 720 260" role="img" aria-label="Daily revenue chart"></svg>
+        <div class="legend"><span><i style="background:var(--navy)"></i>Actual</span><span><i style="background:var(--gold)"></i>Forecast</span><span><i style="background:var(--blue);height:2px"></i>Occupancy</span></div>
+      </div>
+      <div class="card">
+        <h2>Revenue by outlet</h2>
+        <div id="mix"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Outlet summary</h2>
+      <div class="table-wrap"><table id="outlets"></table></div>
+    </div>
+  </section>
+
+  <section id="tab-adjust" hidden>
+    <div class="card adj">
+      <div class="row" style="margin-bottom:12px">
+        <label>Outlet <select id="adj-outlet"></select></label>
+        <span class="muted" style="font-size:12px">Edit covers or average check for any future day. Totals on the Overview update right away.</span>
+        <button class="btn" id="adj-reset" style="margin-left:auto">Reset changes</button>
+      </div>
+      <div class="table-wrap"><table id="adj-table"></table></div>
+    </div>
+  </section>
+
+  <p class="foot">Portfolio demo by Martin Myung · sample data only · <a href="index.html#work">Back to portfolio</a></p>
+</div>
+
+<script>
+// ---- Sample data (fictional) ----
+const DAYS = 30, TODAY = 18, ROOMS = 420;
+const DOW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+const OUTLETS = [
+  { name: 'Harvest Kitchen', color: 'var(--blue)',   capture: .38, check: 34, covers: true },
+  { name: 'Lobby Café',      color: 'var(--teal)',   capture: .30, check: 12, covers: false },
+  { name: 'Skyline Lounge',  color: 'var(--violet)', capture: .16, check: 41, covers: true },
+  { name: 'In-Room Dining',  color: 'var(--orange)', capture: .07, check: 52, covers: true },
+  { name: 'Market & Go',     color: 'var(--pink)',   capture: .22, check: 9,  covers: false },
+];
+const occ = [], days = [];
+for (let d = 0; d < DAYS; d++) {
+  const dow = DOW[(d + 2) % 7];
+  const base = { Mon: .62, Tue: .66, Wed: .71, Thu: .78, Fri: .9, Sat: .95, Sun: .7 }[dow];
+  const o = Math.min(.99, base + (rnd() - .5) * .12);
+  occ.push(o); days.push({ label: `Apr ${d + 1}`, dow });
+}
+const BASE = {};
+OUTLETS.forEach(o => {
+  BASE[o.name] = occ.map((oc, d) => {
+    const rooms = Math.round(oc * ROOMS);
+    const covers = Math.round(rooms * 1.6 * o.capture * (days[d].dow === 'Sat' || days[d].dow === 'Fri' ? 1.12 : 1));
+    const check = +(o.check * (0.95 + rnd() * .1)).toFixed(2);
+    const actual = d < TODAY ? Math.round(covers * check * (0.9 + rnd() * .2)) : null;
+    return { covers, check, actual };
+  });
+});
+let STATE = JSON.parse(JSON.stringify(BASE));
+
+const money = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(2) + 'M' : v >= 1e3 ? '$' + (v / 1e3).toFixed(1) + 'K' : '$' + Math.round(v);
+const fmt = v => Math.round(v).toLocaleString();
+const dayRev = (o, d) => { const r = STATE[o.name][d]; return r.actual != null ? r.actual : r.covers * r.check; };
+const fcRev = (o, d) => { const r = STATE[o.name][d]; return r.covers * r.check; };
+
+function render() {
+  let total = 0, mtd = 0, mtdFc = 0, cov = 0;
+  OUTLETS.forEach(o => { for (let d = 0; d < DAYS; d++) {
+    total += dayRev(o, d); if (d < TODAY) { mtd += STATE[o.name][d].actual; mtdFc += fcRev(o, d); }
+    if (o.covers) cov += STATE[o.name][d].covers; } });
+  document.getElementById('k-total').textContent = money(total);
+  document.getElementById('k-total-sub').textContent = 'Actuals + remaining forecast';
+  document.getElementById('k-mtd').textContent = money(mtd);
+  const v = (mtd - mtdFc) / mtdFc * 100;
+  document.getElementById('k-mtd-sub').innerHTML = `<span class="${v >= 0 ? 'delta-up' : 'delta-down'}">${v >= 0 ? '+' : ''}${v.toFixed(1)}%</span> vs. forecast`;
+  document.getElementById('k-cov').textContent = fmt(cov);
+  document.getElementById('k-occ').textContent = (occ.reduce((a, b) => a + b) / DAYS * 100).toFixed(1) + '%';
+  drawDaily(); drawMix(total); drawTable();
+}
+
+function drawDaily() {
+  const W = 720, H = 260, L = 44, R = 36, T = 12, B = 30, svg = document.getElementById('daily');
+  const vals = days.map((_, d) => OUTLETS.reduce((s, o) => s + dayRev(o, d), 0));
+  const max = Math.ceil(Math.max(...vals) / 5000) * 5000, bw = (W - L - R) / DAYS;
+  const y = v => T + (H - T - B) * (1 - v / max);
+  let g = '';
+  for (let i = 0; i <= 4; i++) { const v = max * i / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${money(v)}</text>`; }
+  vals.forEach((v, d) => {
+    const x = L + d * bw + 2;
+    g += `<rect x="${x}" y="${y(v)}" width="${bw - 4}" height="${H - B - y(v)}" rx="2" fill="${d < TODAY ? 'var(--navy)' : 'var(--gold)'}"><title>${days[d].label} (${days[d].dow}): ${money(v)} ${d < TODAY ? 'actual' : 'forecast'}</title></rect>`;
+    if (d % 3 === 0) g += `<text x="${x + bw / 2 - 2}" y="${H - 10}" text-anchor="middle">${d + 1}</text>`;
+  });
+  const pts = occ.map((o, d) => `${L + d * bw + bw / 2},${T + (H - T - B) * (1 - o)}`).join(' ');
+  g += `<polyline points="${pts}" fill="none" stroke="var(--blue)" stroke-width="2"/>`;
+  g += `<text x="${W - R + 6}" y="${T + 4}">100%</text><text x="${W - R + 6}" y="${H - B}">0%</text>`;
+  g += `<line x1="${L + TODAY * bw}" x2="${L + TODAY * bw}" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-dasharray="3 3"/><text x="${L + TODAY * bw + 4}" y="${T + 10}">today</text>`;
+  svg.innerHTML = g;
+}
+
+function drawMix(total) {
+  const rows = OUTLETS.map(o => ({ o, v: days.reduce((s, _, d) => s + dayRev(o, d), 0) })).sort((a, b) => b.v - a.v);
+  const max = rows[0].v;
+  document.getElementById('mix').innerHTML = rows.map(r => `<div class="bar-row"><span>${r.o.name}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${r.v / max * 100}%;background:${r.o.color}"></div></div>
+    <span style="text-align:right">${money(r.v)}</span></div>`).join('') + `<p class="muted" style="font-size:12px;margin-top:10px">Total ${money(total)}</p>`;
+}
+
+function drawTable() {
+  let h = '<tr><th>Outlet</th><th class="num">Actual to date</th><th class="num">Remaining forecast</th><th class="num">Month total</th><th class="num">Avg check</th><th>Pace</th></tr>';
+  OUTLETS.forEach(o => {
+    const rows = STATE[o.name];
+    const act = rows.slice(0, TODAY).reduce((s, r) => s + r.actual, 0);
+    const fcPast = rows.slice(0, TODAY).reduce((s, r) => s + r.covers * r.check, 0);
+    const rem = rows.slice(TODAY).reduce((s, r) => s + r.covers * r.check, 0);
+    const chk = rows.reduce((s, r) => s + r.check, 0) / DAYS;
+    const pace = (act - fcPast) / fcPast * 100;
+    const cls = pace > 2 ? 'good' : pace < -2 ? 'bad' : 'neutral';
+    h += `<tr><td>${o.name}</td><td class="num">${money(act)}</td><td class="num">${money(rem)}</td><td class="num"><b>${money(act + rem)}</b></td><td class="num">$${chk.toFixed(2)}</td><td><span class="pill ${cls}">${pace >= 0 ? '+' : ''}${pace.toFixed(1)}%</span></td></tr>`;
+  });
+  document.getElementById('outlets').innerHTML = h;
+}
+
+// ---- Adjust tab ----
+const sel = document.getElementById('adj-outlet');
+sel.innerHTML = OUTLETS.map((o, i) => `<option value="${i}">${o.name}</option>`).join('');
+function drawAdjust() {
+  const o = OUTLETS[sel.value], rows = STATE[o.name];
+  let h = `<tr><th>Day</th><th class="num">Occ</th><th class="num">${o.covers ? 'Covers' : 'Transactions'}</th><th class="num">Avg check</th><th class="num">Revenue</th><th>Status</th></tr>`;
+  rows.forEach((r, d) => {
+    const past = d < TODAY;
+    const changed = !past && (r.covers !== BASE[o.name][d].covers || r.check !== BASE[o.name][d].check);
+    h += `<tr><td>${days[d].label} <span class="muted">${days[d].dow}</span></td><td class="num">${(occ[d] * 100).toFixed(0)}%</td>
+      <td class="num">${past ? fmt(r.covers) : `<input type="number" min="0" value="${r.covers}" data-d="${d}" data-k="covers">`}</td>
+      <td class="num">${past ? '$' + r.check.toFixed(2) : `<input type="number" min="0" step="0.5" value="${r.check}" data-d="${d}" data-k="check">`}</td>
+      <td class="num">${money(dayRev(o, d))}</td>
+      <td>${past ? '<span class="pill neutral">Actual</span>' : changed ? '<span class="pill warn">Adjusted</span>' : '<span class="pill good">Forecast</span>'}</td></tr>`;
+  });
+  document.getElementById('adj-table').innerHTML = h;
+}
+document.getElementById('adj-table').addEventListener('change', e => {
+  const t = e.target; if (!t.dataset.k) return;
+  const o = OUTLETS[sel.value]; const v = Math.max(0, parseFloat(t.value) || 0);
+  STATE[o.name][t.dataset.d][t.dataset.k] = t.dataset.k === 'covers' ? Math.round(v) : v;
+  drawAdjust(); render();
+});
+sel.addEventListener('change', drawAdjust);
+document.getElementById('adj-reset').addEventListener('click', () => { STATE = JSON.parse(JSON.stringify(BASE)); drawAdjust(); render(); });
+
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === b));
+  document.getElementById('tab-overview').hidden = b.dataset.tab !== 'overview';
+  document.getElementById('tab-adjust').hidden = b.dataset.tab !== 'adjust';
+}));
+render(); drawAdjust();
+</script>
+</body>
+</html>

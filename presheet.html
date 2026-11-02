@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pre-Sheet Builder Demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .two { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
+  .form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .form label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+  .menu-list { max-height: 420px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+  .item { display: flex; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; align-items: flex-start; }
+  .item:last-child { border-bottom: 0; }
+  .item:hover { background: var(--gold-dim); }
+  .item .name { font-weight: 600; }
+  .item .desc { font-size: 12px; color: var(--muted); }
+  .item .price { margin-left: auto; font-weight: 700; white-space: nowrap; }
+  .sheet { border: 2px solid var(--navy); border-radius: 10px; padding: 16px; background: var(--card); }
+  .sheet h3 { font-size: 16px; border-bottom: 2px solid var(--gold); padding-bottom: 6px; margin-bottom: 10px; }
+  .meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 16px; font-size: 13px; margin-bottom: 12px; }
+  .empty { color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }
+  @media print { .top, .note, .builder, .foot, .no-print { display: none !important; } .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="brand">Sample Hotel</span>
+  <span class="title">Banquet Pre-Sheet Builder</span>
+  <span class="badge">Demo · sample data</span>
+</div>
+<div class="wrap">
+  <div class="note">A demo of the pre-sheet builder with a made-up menu. Fill in the event, click menu items to add them, and the kitchen pre-sheet builds itself with quantities and dietary notes. Nothing is saved.</div>
+  <div class="grid two">
+    <div class="card builder">
+      <h2>1. Event details</h2>
+      <div class="form">
+        <label>Event name <input id="ev-name" value="Regional Sales Kickoff"></label>
+        <label>Date <input id="ev-date" type="date"></label>
+        <label>Room <select id="ev-room"><option>Pacific Ballroom</option><option>Garden Terrace</option><option>Summit Room</option><option>Harbor Suite</option></select></label>
+        <label>Guests <input id="ev-guests" type="number" min="1" value="120"></label>
+      </div>
+      <h2>2. Add menu items</h2>
+      <div class="row" style="margin-bottom:10px">
+        <input id="q" placeholder="Search menu…" style="flex:1;min-width:140px">
+        <select id="cat"></select>
+      </div>
+      <div class="menu-list" id="menu"></div>
+    </div>
+    <div>
+      <div class="sheet" id="sheet"></div>
+      <div class="row no-print" style="margin-top:10px">
+        <button class="btn primary" onclick="window.print()">Print pre-sheet</button>
+        <button class="btn" id="clear">Clear items</button>
+      </div>
+    </div>
+  </div>
+  <p class="foot">Portfolio demo by Martin Myung · sample data only · <a href="index.html#work">Back to portfolio</a></p>
+</div>
+<script>
+const MENU = [
+  ['Breakfast','Classic Farm Breakfast','Scrambled eggs, roasted potatoes, chicken sausage','38','pp','GF'],
+  ['Breakfast','Garden Grain Bowl','Poached eggs, farro, spinach, roasted peppers','40','pp','V'],
+  ['Breakfast','Morning Bakery Table','Pastries, seasonal fruit, yogurt, granola','32','pp','V'],
+  ['Break','Coffee Refresh','Coffee, decaf and hot tea','14','pp',''],
+  ['Break','Afternoon Snack Break','Trail mix, hummus and crudités, cookies','22','pp','V'],
+  ['Break','Healthy Recharge','Fruit skewers, protein bites, infused water','24','pp','GF, V'],
+  ['Lunch','Herb Roasted Chicken','Roasted chicken, seasonal vegetables, lemon jus','52','pp','GF'],
+  ['Lunch','Mediterranean Salad','Romaine, olives, feta, chickpeas, oregano dressing','44','pp','V'],
+  ['Lunch','Deli Lunch Buffet','Build-your-own sandwiches, two salads, cookies','56','pp',''],
+  ['Lunch','Street Taco Buffet','Chicken and vegetable tacos, rice, beans, salsas','58','pp',''],
+  ['Dinner','Braised Short Rib','Whipped potatoes, glazed carrots','78','pp','GF'],
+  ['Dinner','Pan-Seared Salmon','Wild rice, broccolini, citrus butter sauce','72','pp','GF'],
+  ['Dinner','Wild Mushroom Risotto','Mixed mushrooms, parmesan, truffle oil','62','pp','V, GF'],
+  ['Reception','Caprese Skewers','Mozzarella, cherry tomato, basil','6','pc','V, GF'],
+  ['Reception','Mini Crab Cakes','Remoulade, micro greens','8','pc',''],
+  ['Reception','Cheese & Charcuterie','Assorted cheeses, cured meats, crackers','26','pp',''],
+  ['Bar','House Wine','Red, white and sparkling','12','drink',''],
+  ['Bar','Premium Cocktails','Premium spirits and mixers','16','drink',''],
+].map((r, i) => ({ id: i, cat: r[0], name: r[1], desc: r[2], price: +r[3], unit: r[4], diet: r[5] }));
+const PER_GUEST = { pp: 1, pc: 3, drink: 2 };
+let chosen = [];
+const $ = id => document.getElementById(id);
+$('ev-date').valueAsDate = new Date(Date.now() + 7 * 864e5);
+$('cat').innerHTML = '<option value="">All categories</option>' + [...new Set(MENU.map(m => m.cat))].map(c => `<option>${c}</option>`).join('');
+function drawMenu() {
+  const q = $('q').value.toLowerCase(), c = $('cat').value;
+  const list = MENU.filter(m => (!c || m.cat === c) && (m.name + m.desc).toLowerCase().includes(q));
+  $('menu').innerHTML = list.map(m => `<div class="item" data-id="${m.id}"><div><div class="name">${m.name} ${chosen.includes(m.id) ? '<span class="pill good">Added</span>' : ''}</div>
+    <div class="desc">${m.cat} · ${m.desc}${m.diet ? ' · ' + m.diet : ''}</div></div><div class="price">$${m.price}/${m.unit}</div></div>`).join('') || '<div class="empty">No matches</div>';
+}
+function drawSheet() {
+  const g = Math.max(1, parseInt($('ev-guests').value) || 1);
+  const d = $('ev-date').value ? new Date($('ev-date').value + 'T12:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+  const items = chosen.map(id => MENU[id]);
+  let total = 0;
+  const rows = items.map(m => { const qty = g * PER_GUEST[m.unit]; const cost = qty * m.price; total += cost;
+    return `<tr><td>${m.cat}</td><td><b>${m.name}</b><div class="muted" style="font-size:12px">${m.desc}</div></td><td class="num">${qty.toLocaleString()} ${m.unit === 'pp' ? 'ppl' : m.unit === 'pc' ? 'pcs' : 'drinks'}</td><td>${m.diet ? `<span class="pill neutral">${m.diet}</span>` : ''}</td><td class="num">$${cost.toLocaleString()}</td></tr>`; }).join('');
+  const diet = [...new Set(items.flatMap(m => m.diet ? m.diet.split(', ') : []))];
+  $('sheet').innerHTML = `<h3>Daily Pre-Sheet · ${$('ev-name').value || 'Untitled event'}</h3>
+    <div class="meta"><span><b>Date:</b> ${d}</span><span><b>Room:</b> ${$('ev-room').value}</span><span><b>Guests:</b> ${g}</span><span><b>Dietary:</b> ${diet.join(', ') || 'None noted'}</span></div>
+    ${items.length ? `<div class="table-wrap"><table><tr><th>Course</th><th>Item</th><th class="num">Qty</th><th>Diet</th><th class="num">Est. cost</th></tr>${rows}
+    <tr><td colspan="4"><b>Estimated food &amp; beverage</b></td><td class="num"><b>$${total.toLocaleString()}</b></td></tr></table></div>` : '<div class="empty">Click menu items on the left to build the sheet.</div>'}`;
+}
+$('menu').addEventListener('click', e => { const it = e.target.closest('.item'); if (!it) return; const id = +it.dataset.id;
+  chosen = chosen.includes(id) ? chosen.filter(x => x !== id) : [...chosen, id]; drawMenu(); drawSheet(); });
+['q', 'cat'].forEach(id => $(id).addEventListener('input', drawMenu));
+['ev-name', 'ev-date', 'ev-room', 'ev-guests'].forEach(id => $(id).addEventListener('input', drawSheet));
+$('clear').addEventListener('click', () => { chosen = []; drawMenu(); drawSheet(); });
+chosen = [2, 3, 6, 11];
+drawMenu(); drawSheet();
+</script>
+</body>
+</html>

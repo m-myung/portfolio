@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordinance Pay Generator Demo</title>
+<link rel="stylesheet" href="demo.css">
+<style>
+  .files { grid-template-columns: repeat(3, 1fr); margin-bottom: 14px; }
+  @media (max-width: 760px) { .files { grid-template-columns: 1fr; } }
+  .file { border: 2px dashed var(--line); border-radius: 12px; padding: 14px; background: var(--card); }
+  .file.loaded { border-style: solid; border-color: var(--good); }
+  .file .t { font-weight: 600; }
+  .file .s { font-size: 12px; color: var(--muted); }
+  .checks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 760px) { .checks { grid-template-columns: 1fr; } }
+  .check { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; background: var(--card); }
+  .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-items: center; font-size: 11px; color: #fff; }
+  .dot.run { border-color: var(--gold); border-top-color: transparent; animation: spin .7s linear infinite; }
+  .dot.pass { background: var(--good); border-color: var(--good); }
+  .dot.warn { background: var(--warn); border-color: var(--warn); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  tr.over td { background: var(--warn-bg); }
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="brand">Sample Hotel</span>
+  <span class="title">Room Attendant Ordinance Pay Generator</span>
+  <span class="badge">Demo · sample data</span>
+</div>
+<div class="wrap">
+  <div class="note">A demo of the daily ordinance workflow with made-up attendants and rooms. It uses a simplified, illustrative rule: if an attendant cleans more than <b>3,500 sq ft</b> in a shift, the whole shift is paid at <b>double time</b>. Real rules and rates vary; this is for demonstration only.</div>
+
+  <div class="grid files">
+    <div class="file" id="f1"><div class="t">Room actions log</div><div class="s">Who cleaned which room, and when</div></div>
+    <div class="file" id="f2"><div class="t">Housekeeper activity</div><div class="s">Room type and status per attendant</div></div>
+    <div class="file" id="f3"><div class="t">Shift hours</div><div class="s">Hours worked per attendant</div></div>
+  </div>
+  <div class="row" style="margin-bottom:14px">
+    <button class="btn" id="load">Load sample reports</button>
+    <button class="btn primary" id="run" disabled>Run checks &amp; calculate</button>
+    <span class="muted" id="status" style="font-size:13px"></span>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <h2>Validation checks</h2>
+    <div class="checks" id="checks"></div>
+  </div>
+
+  <div class="grid kpis" id="kpis" hidden>
+    <div class="card kpi"><div class="label">Attendants</div><div class="value" id="k1"></div></div>
+    <div class="card kpi"><div class="label">Rooms cleaned</div><div class="value" id="k2"></div></div>
+    <div class="card kpi"><div class="label">Over the limit</div><div class="value" id="k3"></div></div>
+    <div class="card kpi"><div class="label">Ordinance premium</div><div class="value" id="k4"></div></div>
+  </div>
+  <div class="card" id="results" hidden>
+    <div class="row" style="justify-content:space-between;margin-bottom:8px"><h2 style="margin:0">Payroll summary</h2><button class="btn" id="csv">Download CSV</button></div>
+    <div class="table-wrap"><table id="table"></table></div>
+    <p class="muted" style="font-size:12px;margin-top:8px" id="flags"></p>
+  </div>
+  <p class="foot">Portfolio demo by Martin Myung · sample data only · <a href="index.html#work">Back to portfolio</a></p>
+</div>
+<script>
+const LIMIT = 3500, RATE = 22.5;
+const SQFT = { K: 330, QQ: 360, S: 520, ADA: 410 };
+const ATT = [
+  { name: 'A. Rivera', hours: 8,   rooms: 'K K QQ K QQ K S K QQ K' },
+  { name: 'B. Chen',   hours: 8,   rooms: 'QQ QQ K K QQ K K QQ' },
+  { name: 'C. Okafor', hours: 7.5, rooms: 'K S S K QQ K QQ' },
+  { name: 'D. Nguyen', hours: 8,   rooms: 'K K K QQ QQ K ADA K QQ K QQ' },
+  { name: 'E. Silva',  hours: 8,   rooms: 'QQ K QQ K K QQ K QQ K' },
+  { name: 'F. Patel',  hours: 6,   rooms: 'K QQ K K QQ' },
+  { name: 'G. Morales',hours: 8,   rooms: 'S K QQ K S K QQ K' },
+  { name: 'H. Kim',    hours: 8,   rooms: 'K QQ K QQ K QQ K QQ K QQ' },
+];
+const CHECKS = [
+  ['Room counts match', 'pass'], ['Totals reconcile', 'pass'], ['No duplicate rooms', 'warn'],
+  ['Task types match log', 'pass'], ['Square footage lookup', 'pass'], ['All rooms in lookup', 'pass'],
+  ['Floor numbers consistent', 'pass'], ['Pay math re-checked', 'pass'], ['Roster has rates', 'pass'],
+];
+const $ = id => document.getElementById(id);
+$('checks').innerHTML = CHECKS.map((c, i) => `<div class="check"><span class="dot" id="c${i}"></span>${c[0]}</div>`).join('');
+$('load').onclick = () => { ['f1', 'f2', 'f3'].forEach((f, i) => setTimeout(() => { $(f).classList.add('loaded'); $(f).querySelector('.s').textContent = 'Sample file loaded ✓'; if (i === 2) { $('run').disabled = false; $('status').textContent = 'All 3 reports loaded.'; } }, i * 250)); $('load').disabled = true; };
+let rows = [];
+$('run').onclick = () => {
+  $('run').disabled = true; $('status').textContent = 'Running checks…';
+  CHECKS.forEach((c, i) => { const d = $('c' + i); setTimeout(() => d.className = 'dot run', i * 220); setTimeout(() => { d.className = 'dot ' + c[1]; d.textContent = c[1] === 'pass' ? '✓' : '!'; }, i * 220 + 200); });
+  setTimeout(calc, CHECKS.length * 220 + 300);
+};
+function calc() {
+  rows = ATT.map(a => { const r = a.rooms.split(' '); const sq = r.reduce((s, t) => s + SQFT[t], 0); const over = sq > LIMIT;
+    const base = a.hours * RATE; const premium = over ? base : 0; return { ...a, n: r.length, sq, over, base, premium }; });
+  let h = '<tr><th>Attendant</th><th class="num">Rooms</th><th class="num">Sq ft</th><th class="num">Hours</th><th class="num">Base pay</th><th class="num">Premium</th><th>Status</th></tr>';
+  rows.forEach(r => h += `<tr class="${r.over ? 'over' : ''}"><td>${r.name}</td><td class="num">${r.n}</td><td class="num">${r.sq.toLocaleString()}</td><td class="num">${r.hours}</td><td class="num">$${r.base.toFixed(2)}</td><td class="num">${r.premium ? '$' + r.premium.toFixed(2) : '—'}</td><td>${r.over ? '<span class="pill warn">Over limit</span>' : '<span class="pill good">Within limit</span>'}</td></tr>`);
+  $('table').innerHTML = h;
+  $('k1').textContent = rows.length; $('k2').textContent = rows.reduce((s, r) => s + r.n, 0);
+  $('k3').textContent = rows.filter(r => r.over).length; $('k4').textContent = '$' + rows.reduce((s, r) => s + r.premium, 0).toFixed(2);
+  $('flags').textContent = 'Flag for review: room 512 appears for two attendants in the actions log (check 3). Fix the source report or confirm before sending to payroll.';
+  $('kpis').hidden = false; $('results').hidden = false; $('status').textContent = 'Done — 8 checks passed, 1 needs review.';
+}
+$('csv').onclick = () => {
+  const csv = ['Attendant,Rooms,SqFt,Hours,BasePay,Premium', ...rows.map(r => [r.name, r.n, r.sq, r.hours, r.base.toFixed(2), r.premium.toFixed(2)].join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'sample-ordinance-summary.csv'; a.click();
+};
+</script>
+</body>
+</html>
