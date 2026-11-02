@@ -565,9 +565,18 @@
     /* ── FEATURED WORK ── */
     #work { background: var(--bg-alt); padding: 80px 0; }
     .work-grid { display: grid; gap: 40px; }
+    .work-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 28px 28px; }
+    @media (max-width: 640px) { .work-shots { grid-template-columns: 1fr; } }
+    .work-shot { display: block; position: relative; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; line-height: 0; }
+    .work-shot img { width: 100%; height: auto; display: block; transition: transform .3s; }
+    .work-shot:hover img { transform: scale(1.02); }
+    .work-shot span { position: absolute; left: 10px; bottom: 10px; line-height: 1; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; background: rgba(13,24,41,.85); color: #fff; padding: 5px 8px; border-radius: 6px; }
+    .work-shot.single { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; aspect-ratio: 16 / 9.5; }
+    .work-shot.single img { height: 100%; object-fit: cover; object-position: top left; }
     .work-pair { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
     @media (max-width: 860px) { .work-pair { grid-template-columns: 1fr; } }
-    .work-pair .work-card-header { flex-direction: column; height: 100%; }
+    .work-pair .work-card { display: flex; flex-direction: column; }
+    .work-pair .work-card-header { flex-direction: column; flex: 1; }
     .work-pair .work-open-btn { margin-top: auto; }
     .work-card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
     .work-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 28px 28px 20px; }
@@ -879,17 +888,15 @@
           </div>
           <a href="fnb-forecast.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
         </div>
-        <div class="work-preview">
-          <div class="browser-bar">
-            <div class="browser-dots"><span></span><span></span><span></span></div>
-            <span class="browser-url">F&amp;B Forecast — Demo</span>
-          </div>
-          <iframe src="fnb-forecast.html" title="F&amp;B Forecast demo" loading="lazy"></iframe>
+        <div class="work-shots">
+          <a class="work-shot" href="fnb-forecast.html" target="_blank"><img src="img-fnb-forecast.jpg" alt="F&amp;B forecast overview with daily revenue chart and outlet summary (sample data)" loading="lazy"><span>Overview</span></a>
+          <a class="work-shot" href="fnb-forecast.html" target="_blank"><img src="img-fnb-adjust.jpg" alt="F&amp;B forecast Adjust tab with bulk adjust and system vs. my forecast (sample data)" loading="lazy"><span>Adjustments</span></a>
         </div>
       </div>
 
       <div class="work-pair">
       <div class="work-card fade-in">
+        <a class="work-shot single" href="ordinance.html" target="_blank"><img src="img-ordinance.jpg" alt="Ordinance generator after running validation checks, with payroll summary (sample data)" loading="lazy"></a>
         <div class="work-card-header">
           <div>
             <span class="work-tag">Live Demo · Sample Data</span>
@@ -900,6 +907,7 @@
         </div>
       </div>
       <div class="work-card fade-in">
+        <a class="work-shot single" href="labor-report.html" target="_blank"><img src="img-labor-report.jpg" alt="Labor report automation run log and finished report preview (sample data)" loading="lazy"></a>
         <div class="work-card-header">
           <div>
             <span class="work-tag">Simulated Run · Sample Data</span>
@@ -910,6 +918,7 @@
         </div>
       </div>
       <div class="work-card fade-in">
+        <a class="work-shot single" href="presheet.html" target="_blank"><img src="img-presheet.jpg" alt="Pre-sheet builder with menu list and generated pre-sheet (sample data)" loading="lazy"></a>
         <div class="work-card-header">
           <div>
             <span class="work-tag">Live Demo · Sample Data</span>
@@ -920,6 +929,7 @@
         </div>
       </div>
       <div class="work-card fade-in">
+        <a class="work-shot single" href="meal-break-audit.html" target="_blank"><img src="img-meal-break-audit.jpg" alt="Meal break audit flagging missed, late and short breaks (sample data)" loading="lazy"></a>
         <div class="work-card-header">
           <div>
             <span class="work-tag">Live Demo · Sample Data</span>

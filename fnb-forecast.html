@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>F&amp;B Forecast Demo</title>
-<link rel="stylesheet" href="demo.css">
+<link rel="stylesheet" href="demo.css?v=3">
 <style>
   .two { grid-template-columns: 2fr 1fr; }
   @media (max-width: 860px) { .two { grid-template-columns: 1fr; } }
@@ -12,6 +12,12 @@
   .bar-track { background: var(--line); border-radius: 4px; height: 10px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 4px; }
   .adj input { width: 80px; text-align: right; }
+  .kpis3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 600px) { .kpis3 { grid-template-columns: 1fr; } }
+  .bulk { display: grid; gap: 10px; font-size: 13px; }
+  .bulk label { display: grid; gap: 4px; color: var(--muted); font-size: 12px; }
+  tr.changed td { background: var(--warn-bg); }
+  .mini { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 6px; padding: 2px 7px; cursor: pointer; }
   .delta-up { color: var(--good); } .delta-down { color: var(--bad); }
 </style>
 </head>
@@ -22,7 +28,7 @@
   <span class="badge">Demo · sample data</span>
 </div>
 <div class="wrap">
-  <div class="note">This demo shows how the forecast app works, using a fictional 420-room hotel and made-up numbers. Past days show actuals; future days show the forecast. Try the <b>Adjust</b> tab to change a day and watch the totals update.</div>
+  <div class="note">This demo shows how the forecast app works, using a fictional 420-room hotel and made-up numbers. Past days show actuals; future days show the forecast. Open the <b>Adjust</b> tab to fine-tune the forecast: edit a day, bulk-adjust weekends, and see the impact against the system forecast.</div>
 
   <div class="tabs">
     <button class="tab active" data-tab="overview">Overview</button>
@@ -54,11 +60,34 @@
   </section>
 
   <section id="tab-adjust" hidden>
+    <div class="grid kpis kpis3">
+      <div class="card kpi"><div class="label">System forecast</div><div class="value" id="a-sys"></div><div class="sub">Remaining days, this outlet</div></div>
+      <div class="card kpi"><div class="label">My forecast</div><div class="value" id="a-adj"></div><div class="sub" id="a-n"></div></div>
+      <div class="card kpi"><div class="label">Difference</div><div class="value" id="a-diff"></div><div class="sub" id="a-diff-pct"></div></div>
+    </div>
+    <div class="grid two" style="margin-bottom:14px">
+      <div class="card">
+        <h2>Remaining days — system vs. my forecast</h2>
+        <svg class="chart" id="adj-chart" viewBox="0 0 720 200" role="img" aria-label="Adjusted forecast chart"></svg>
+        <div class="legend"><span><i style="background:var(--line)"></i>System forecast</span><span><i style="background:var(--gold)"></i>My forecast</span><span><i style="background:var(--warn)"></i>Adjusted day</span></div>
+      </div>
+      <div class="card">
+        <h2>Bulk adjust</h2>
+        <div class="bulk">
+          <label>Change <select id="b-metric"><option value="covers">Covers</option><option value="check">Average check</option></select></label>
+          <label>By <span class="row" style="gap:6px"><input id="b-pct" type="number" value="10" step="1" style="width:80px"> %</span></label>
+          <label>On <select id="b-days"><option value="all">All remaining days</option><option value="wknd">Fridays &amp; Saturdays</option><option value="wkdy">Mon–Thu</option><option value="range">Date range…</option></select></label>
+          <label id="b-range" hidden>From <span class="row" style="gap:6px"><select id="b-from"></select> to <select id="b-to"></select></span></label>
+          <div class="row"><button class="btn primary" id="b-apply">Apply</button><button class="btn" id="b-undo" disabled>Undo</button></div>
+          <p class="muted" id="b-msg" style="font-size:12px"></p>
+        </div>
+      </div>
+    </div>
     <div class="card adj">
       <div class="row" style="margin-bottom:12px">
         <label>Outlet <select id="adj-outlet"></select></label>
-        <span class="muted" style="font-size:12px">Edit covers or average check for any future day. Totals on the Overview update right away.</span>
-        <button class="btn" id="adj-reset" style="margin-left:auto">Reset changes</button>
+        <span class="muted" style="font-size:12px">Edit any future day, or use bulk adjust. Totals everywhere update right away.</span>
+        <button class="btn" id="adj-reset" style="margin-left:auto">Reset outlet</button>
       </div>
       <div class="table-wrap"><table id="adj-table"></table></div>
     </div>
@@ -163,28 +192,93 @@ function drawTable() {
 // ---- Adjust tab ----
 const sel = document.getElementById('adj-outlet');
 sel.innerHTML = OUTLETS.map((o, i) => `<option value="${i}">${o.name}</option>`).join('');
+const cur = () => OUTLETS[sel.value];
+const sysRev = (o, d) => BASE[o.name][d].covers * BASE[o.name][d].check;
+const isChanged = (o, d) => d >= TODAY && (STATE[o.name][d].covers !== BASE[o.name][d].covers || STATE[o.name][d].check !== BASE[o.name][d].check);
+let undoStack = [];
 function drawAdjust() {
-  const o = OUTLETS[sel.value], rows = STATE[o.name];
-  let h = `<tr><th>Day</th><th class="num">Occ</th><th class="num">${o.covers ? 'Covers' : 'Transactions'}</th><th class="num">Avg check</th><th class="num">Revenue</th><th>Status</th></tr>`;
+  const o = cur(), rows = STATE[o.name];
+  let sys = 0, adj = 0, n = 0;
+  for (let d = TODAY; d < DAYS; d++) { sys += sysRev(o, d); adj += fcRev(o, d); if (isChanged(o, d)) n++; }
+  const diff = adj - sys, pct = sys ? diff / sys * 100 : 0;
+  document.getElementById('a-sys').textContent = money(sys);
+  document.getElementById('a-adj').textContent = money(adj);
+  document.getElementById('a-n').textContent = n ? `${n} day${n > 1 ? 's' : ''} adjusted` : 'No changes yet';
+  document.getElementById('a-diff').innerHTML = `<span class="${diff >= 0 ? 'delta-up' : 'delta-down'}">${diff >= 0 ? '+' : '−'}${money(Math.abs(diff))}</span>`;
+  document.getElementById('a-diff-pct').textContent = `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% vs. system`;
+  let h = `<tr><th>Day</th><th class="num">Occ</th><th class="num">${o.covers ? 'Covers' : 'Transactions'}</th><th class="num">Avg check</th><th class="num">System</th><th class="num">Mine</th><th class="num">Diff</th><th></th></tr>`;
   rows.forEach((r, d) => {
-    const past = d < TODAY;
-    const changed = !past && (r.covers !== BASE[o.name][d].covers || r.check !== BASE[o.name][d].check);
-    h += `<tr><td>${days[d].label} <span class="muted">${days[d].dow}</span></td><td class="num">${(occ[d] * 100).toFixed(0)}%</td>
-      <td class="num">${past ? fmt(r.covers) : `<input type="number" min="0" value="${r.covers}" data-d="${d}" data-k="covers">`}</td>
-      <td class="num">${past ? '$' + r.check.toFixed(2) : `<input type="number" min="0" step="0.5" value="${r.check}" data-d="${d}" data-k="check">`}</td>
-      <td class="num">${money(dayRev(o, d))}</td>
-      <td>${past ? '<span class="pill neutral">Actual</span>' : changed ? '<span class="pill warn">Adjusted</span>' : '<span class="pill good">Forecast</span>'}</td></tr>`;
+    if (d < TODAY) return;
+    const ch = isChanged(o, d), dv = fcRev(o, d) - sysRev(o, d);
+    h += `<tr class="${ch ? 'changed' : ''}"><td>${days[d].label} <span class="muted">${days[d].dow}</span></td><td class="num">${(occ[d] * 100).toFixed(0)}%</td>
+      <td class="num"><input type="number" min="0" value="${r.covers}" data-d="${d}" data-k="covers"></td>
+      <td class="num"><input type="number" min="0" step="0.5" value="${r.check}" data-d="${d}" data-k="check"></td>
+      <td class="num muted">${money(sysRev(o, d))}</td><td class="num"><b>${money(fcRev(o, d))}</b></td>
+      <td class="num ${dv > 0 ? 'delta-up' : dv < 0 ? 'delta-down' : 'muted'}">${dv ? (dv > 0 ? '+' : '−') + money(Math.abs(dv)) : '—'}</td>
+      <td>${ch ? `<button class="mini" data-reset="${d}" title="Reset this day">↺</button>` : ''}</td></tr>`;
   });
   document.getElementById('adj-table').innerHTML = h;
+  drawAdjChart(o);
+  document.getElementById('b-undo').disabled = !undoStack.length;
 }
+function drawAdjChart(o) {
+  const W = 720, H = 200, L = 44, R = 8, T = 10, B = 26, svg = document.getElementById('adj-chart');
+  const ds = []; for (let d = TODAY; d < DAYS; d++) ds.push(d);
+  const max = Math.max(...ds.map(d => Math.max(sysRev(o, d), fcRev(o, d)))) * 1.1 || 1;
+  const bw = (W - L - R) / ds.length, y = v => T + (H - T - B) * (1 - v / max);
+  let g = '';
+  for (let i = 0; i <= 3; i++) { const v = max * i / 3; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${money(v)}</text>`; }
+  ds.forEach((d, i) => {
+    const x = L + i * bw, s = sysRev(o, d), a = fcRev(o, d), ch = isChanged(o, d);
+    g += `<rect x="${x + 2}" y="${y(s)}" width="${bw / 2 - 2}" height="${H - B - y(s)}" rx="2" fill="var(--line)"><title>${days[d].label} system: ${money(s)}</title></rect>`;
+    g += `<rect x="${x + bw / 2}" y="${y(a)}" width="${bw / 2 - 2}" height="${H - B - y(a)}" rx="2" fill="${ch ? 'var(--warn)' : 'var(--gold)'}"><title>${days[d].label} mine: ${money(a)}</title></rect>`;
+    g += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${d + 1}</text>`;
+  });
+  svg.innerHTML = g;
+}
+const snapshot = () => JSON.parse(JSON.stringify(STATE[cur().name]));
 document.getElementById('adj-table').addEventListener('change', e => {
   const t = e.target; if (!t.dataset.k) return;
-  const o = OUTLETS[sel.value]; const v = Math.max(0, parseFloat(t.value) || 0);
-  STATE[o.name][t.dataset.d][t.dataset.k] = t.dataset.k === 'covers' ? Math.round(v) : v;
+  undoStack.push({ outlet: cur().name, rows: snapshot() });
+  const v = Math.max(0, parseFloat(t.value) || 0);
+  STATE[cur().name][t.dataset.d][t.dataset.k] = t.dataset.k === 'covers' ? Math.round(v) : +v.toFixed(2);
   drawAdjust(); render();
 });
-sel.addEventListener('change', drawAdjust);
-document.getElementById('adj-reset').addEventListener('click', () => { STATE = JSON.parse(JSON.stringify(BASE)); drawAdjust(); render(); });
+document.getElementById('adj-table').addEventListener('click', e => {
+  const d = e.target.dataset && e.target.dataset.reset; if (d == null) return;
+  undoStack.push({ outlet: cur().name, rows: snapshot() });
+  STATE[cur().name][d] = { ...BASE[cur().name][d] }; drawAdjust(); render();
+});
+// bulk
+const from = document.getElementById('b-from'), to = document.getElementById('b-to');
+const opts = days.slice(TODAY).map((x, i) => `<option value="${i + TODAY}">${x.label} (${x.dow})</option>`).join('');
+from.innerHTML = opts; to.innerHTML = opts; to.value = DAYS - 1;
+document.getElementById('b-days').addEventListener('change', e => document.getElementById('b-range').hidden = e.target.value !== 'range');
+document.getElementById('b-apply').addEventListener('click', () => {
+  const metric = document.getElementById('b-metric').value, pct = parseFloat(document.getElementById('b-pct').value) || 0, mode = document.getElementById('b-days').value;
+  const o = cur(); undoStack.push({ outlet: o.name, rows: snapshot() });
+  let count = 0;
+  for (let d = TODAY; d < DAYS; d++) {
+    const dow = days[d].dow;
+    const hit = mode === 'all' || (mode === 'wknd' && (dow === 'Fri' || dow === 'Sat')) || (mode === 'wkdy' && ['Mon', 'Tue', 'Wed', 'Thu'].includes(dow)) || (mode === 'range' && d >= +from.value && d <= +to.value);
+    if (!hit) continue;
+    const r = STATE[o.name][d];
+    if (metric === 'covers') r.covers = Math.max(0, Math.round(r.covers * (1 + pct / 100))); else r.check = Math.max(0, +(r.check * (1 + pct / 100)).toFixed(2));
+    count++;
+  }
+  document.getElementById('b-msg').textContent = `${pct >= 0 ? '+' : ''}${pct}% ${metric === 'covers' ? 'covers' : 'average check'} applied to ${count} day${count === 1 ? '' : 's'} at ${o.name}.`;
+  drawAdjust(); render();
+});
+document.getElementById('b-undo').addEventListener('click', () => {
+  const u = undoStack.pop(); if (!u) return;
+  STATE[u.outlet] = u.rows; sel.value = OUTLETS.findIndex(o => o.name === u.outlet);
+  document.getElementById('b-msg').textContent = 'Last change undone.'; drawAdjust(); render();
+});
+sel.addEventListener('change', () => { document.getElementById('b-msg').textContent = ''; drawAdjust(); });
+document.getElementById('adj-reset').addEventListener('click', () => {
+  undoStack.push({ outlet: cur().name, rows: snapshot() });
+  STATE[cur().name] = JSON.parse(JSON.stringify(BASE[cur().name])); document.getElementById('b-msg').textContent = 'Outlet reset to the system forecast.'; drawAdjust(); render();
+});
 
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === b));
