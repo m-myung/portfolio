@@ -204,36 +204,21 @@
     }
     .chip:hover { background: rgba(196,162,106,0.28); color: rgba(255,255,255,0.88); }
 
-    /* ── WHAT CHANGED ── */
-    #stats {
-      background: var(--ink);
-      padding: 2.25rem 2.5rem 2.5rem;
-      border-top: 1px solid rgba(196,162,106,0.12);
-    }
-    .changes-inner { max-width: 860px; margin: 0 auto; }
-    .work-card { scroll-margin-top: 90px; }
-    .changes-label {
-      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-      color: #d8b77c; margin-bottom: 0.75rem;
-    }
-    .change {
-      display: grid; grid-template-columns: 180px 1fr auto 1fr; align-items: baseline; gap: 1rem;
-      padding: 0.95rem 0; border-top: 1px solid rgba(196,162,106,0.12);
-      text-decoration: none; color: inherit; transition: background 0.2s;
-    }
-    .change:last-child { border-bottom: 1px solid rgba(196,162,106,0.12); }
-    .change:hover .change-after { text-decoration: underline; text-underline-offset: 4px; }
-    .change-name { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
-    .change-before { font-size: 1rem; color: rgba(255,255,255,0.55); }
+    /* ── BEFORE AND AFTER (top of Projects) ── */
+    .changes { margin: 0 0 40px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg); padding: 22px 28px 8px; }
+    .changes-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+    .change { display: grid; grid-template-columns: 170px 1fr auto 1fr; align-items: baseline; gap: 1rem;
+      padding: 0.9rem 0; border-top: 1px solid var(--border); text-decoration: none; color: inherit; }
+    .change-name { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .change-before { font-size: 0.98rem; color: var(--muted); }
     .change-arrow { color: var(--gold); font-size: 1.1rem; }
-    .change-after { font-size: 1.15rem; font-weight: 600; color: var(--gold); letter-spacing: -0.01em; }
+    .change-after { font-size: 1.08rem; font-weight: 600; color: var(--fg); }
+    .change:hover .change-after { color: var(--gold); }
+    .work-card { scroll-margin-top: 90px; }
     @media (max-width: 720px) {
-      #stats { padding: 1.75rem 1.25rem 2rem; }
+      .changes { padding: 18px 18px 6px; }
       .change { grid-template-columns: auto 1fr; row-gap: 0.25rem; column-gap: 0.6rem; }
-      .change-name { grid-column: 1 / -1; }
-      .change-before { grid-column: 1 / -1; }
-      .change-arrow { grid-column: 1; }
-      .change-after { grid-column: 2; }
+      .change-name, .change-before { grid-column: 1 / -1; }
     }
 
 
@@ -786,31 +771,6 @@
   </div>
 </section>
 
-<!-- WHAT CHANGED -->
-<div id="stats">
-  <div class="changes-inner">
-    <p class="changes-label fade-in">What changed</p>
-    <a class="change fade-in" href="#proj-ordinance">
-      <span class="change-name">LA Ordinance Report</span>
-      <span class="change-before">4–5 hours a day by hand</span>
-      <span class="change-arrow" aria-hidden="true">→</span>
-      <span class="change-after">a few minutes</span>
-    </a>
-    <a class="change fade-in" href="#proj-fnb">
-      <span class="change-name">F&amp;B forecast</span>
-      <span class="change-before">a fragile spreadsheet</span>
-      <span class="change-arrow" aria-hidden="true">→</span>
-      <span class="change-after">an app 12 managers use daily</span>
-    </a>
-    <a class="change fade-in" href="#proj-labor">
-      <span class="change-name">Labor reports</span>
-      <span class="change-before">built by hand every morning</span>
-      <span class="change-arrow" aria-hidden="true">→</span>
-      <span class="change-after">automated, email ready</span>
-    </a>
-  </div>
-</div>
-
 <!-- SUMMARY -->
 <section id="summary">
   <div class="container">
@@ -873,6 +833,27 @@
     <p class="section-label">Selected Work</p>
     <h2 class="section-title fade-in">Projects</h2>
     <p class="summary-text fade-in" style="margin-bottom:32px">Tools I've built for the hotels I support. Each demo below is a stand-alone recreation with a fictional hotel and sample data, so you can click through how it works.</p>
+    <div class="changes fade-in">
+      <p class="changes-label">Before and after</p>
+      <a class="change" href="#proj-ordinance">
+      <span class="change-name">LA Ordinance Report</span>
+      <span class="change-before">4–5 hours a day by hand</span>
+      <span class="change-arrow" aria-hidden="true">→</span>
+      <span class="change-after">a few minutes</span>
+    </a>
+      <a class="change" href="#proj-fnb">
+      <span class="change-name">F&amp;B forecast</span>
+      <span class="change-before">a fragile spreadsheet</span>
+      <span class="change-arrow" aria-hidden="true">→</span>
+      <span class="change-after">an app 12 managers use daily</span>
+    </a>
+      <a class="change" href="#proj-labor">
+      <span class="change-name">Labor reports</span>
+      <span class="change-before">built by hand every morning</span>
+      <span class="change-arrow" aria-hidden="true">→</span>
+      <span class="change-after">automated, email ready</span>
+    </a>
+    </div>
     <div class="work-grid">
 
       <div class="work-card fade-in" id="proj-fnb">
