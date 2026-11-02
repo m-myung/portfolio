@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cert Tracker Demo</title>
+<link rel="stylesheet" href="demo.css?v=3">
+<style>
+  .two { grid-template-columns: 1.2fr 1fr; }
+  @media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+  .mail { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .mail .head { background: var(--gold-dim); padding: 8px 12px; font-size: 12px; color: var(--muted); }
+  .mail .head b { color: var(--fg); }
+  .mail .body { padding: 10px 12px; font-size: 13px; }
+  .mail table { font-size: 12px; margin-top: 6px; }
+  .mail td, .mail th { padding: 5px 6px; }
+  .empty { color: var(--muted); font-size: 13px; padding: 30px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="top">
+  <span class="brand">Sample Hotel</span>
+  <span class="title">Cert Tracker — expiry alerts</span>
+  <span class="badge">Demo · sample data</span>
+</div>
+<div class="wrap">
+  <div class="note">The real tracker is a shared Excel workbook plus a weekly automated email. Managers keep the workbook up to date; every Monday each department head gets one summary of what's expiring, what's expired, and who still needs a certificate. This demo uses made-up employees and a fictional hotel.</div>
+  <div class="grid kpis" id="kpis"></div>
+  <div class="grid two">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <h2 style="margin:0">Certifications</h2>
+        <label class="muted" style="font-size:13px">Department <select id="dept"></select></label>
+      </div>
+      <div class="table-wrap"><table id="certs"></table></div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <h2 style="margin:0">Monday summary emails</h2>
+        <button class="btn primary" id="send">Preview Monday send</button>
+      </div>
+      <div id="mails"><div class="empty">Click “Preview Monday send” to see the emails each department head would get.</div></div>
+    </div>
+  </div>
+  <p class="foot">Portfolio demo by Martin Myung · sample data only · <a href="index.html#work">Back to portfolio</a></p>
+</div>
+<script>
+const DAY = 864e5, today = new Date(); today.setHours(0, 0, 0, 0);
+const d = n => new Date(today.getTime() + n * DAY);
+const fmt = x => x ? x.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+const DEPTS = { 'Restaurant': 'restaurant.head@samplehotel.test', 'Banquets': 'banquets.head@samplehotel.test', 'Bar & Lounge': 'bar.head@samplehotel.test', 'Kitchen': 'chef@samplehotel.test' };
+// name, dept, cert, expires (days from today) | null = never certified, hired (days ago)
+const ROWS = [
+  ['Server 01','Restaurant','Food Handler',210],['Server 02','Restaurant','Food Handler',45],['Server 03','Restaurant','Food Handler',-12],
+  ['Server 04','Restaurant','RBS',25],['Host 01','Restaurant','Food Handler',380],
+  ['Banquet 01','Banquets','Food Handler',12],['Banquet 02','Banquets','RBS',null,40],['Banquet 03','Banquets','Food Handler',150],['Banquet 04','Banquets','RBS',58],
+  ['Bartender 01','Bar & Lounge','RBS',5],['Bartender 02','Bar & Lounge','RBS',300],['Bartender 03','Bar & Lounge','Food Handler',-3],
+  ['Cook 01','Kitchen','Food Handler',90],['Cook 02','Kitchen','Food Handler',28],['Cook 03','Kitchen','Food Handler',null,35],['Steward 01','Kitchen','Food Handler',400],
+].map(r => ({ name: r[0], dept: r[1], cert: r[2], exp: r[3] == null ? null : d(r[3]), days: r[3], hired: r[4] }));
+function tier(r) {
+  if (r.days == null) return { k: 'never', label: `Never certified (hired ${r.hired} days ago)`, cls: 'bad', to: '+ division head' };
+  if (r.days < 0) return { k: 'expired', label: `Expired ${-r.days} day${r.days === -1 ? '' : 's'} ago`, cls: 'bad', to: '+ HR / GM' };
+  if (r.days <= 7) return { k: '7', label: `${r.days} days left`, cls: 'bad', to: '+ division head' };
+  if (r.days <= 14) return { k: '14', label: `${r.days} days left`, cls: 'warn', to: '' };
+  if (r.days <= 30) return { k: '30', label: `${r.days} days left`, cls: 'warn', to: '' };
+  if (r.days <= 60) return { k: '60', label: `${r.days} days left`, cls: 'neutral', to: '' };
+  return { k: 'ok', label: 'Current', cls: 'good', to: '' };
+}
+const $ = id => document.getElementById(id);
+$('dept').innerHTML = '<option value="">All departments</option>' + Object.keys(DEPTS).map(x => `<option>${x}</option>`).join('');
+function draw() {
+  const t = ROWS.map(r => ({ r, t: tier(r) }));
+  const c = k => t.filter(x => k(x.t.k)).length;
+  $('kpis').innerHTML = [
+    ['Team members tracked', ROWS.length, '4 departments'],
+    ['Expiring in 60 days', c(k => ['60','30','14','7'].includes(k)), 'reminders go out'],
+    ['Expired', c(k => k === 'expired'), 'HR and GM copied'],
+    ['Never certified', c(k => k === 'never'), 'past the hire deadline'],
+  ].map(k => `<div class="card kpi"><div class="label">${k[0]}</div><div class="value">${k[1]}</div><div class="sub">${k[2]}</div></div>`).join('');
+  const dep = $('dept').value;
+  const list = t.filter(x => !dep || x.r.dept === dep).sort((a, b) => (a.r.days ?? -999) - (b.r.days ?? -999));
+  $('certs').innerHTML = '<tr><th>Team member</th><th>Dept</th><th>Cert</th><th>Expires</th><th>Status</th></tr>' +
+    list.map(x => `<tr><td>${x.r.name}</td><td>${x.r.dept}</td><td>${x.r.cert}</td><td>${fmt(x.r.exp)}</td><td><span class="pill ${x.t.cls}">${x.t.label}</span></td></tr>`).join('');
+}
+$('dept').onchange = draw;
+$('send').onclick = () => {
+  const html = Object.entries(DEPTS).map(([dept, to]) => {
+    const items = ROWS.filter(r => r.dept === dept).map(r => ({ r, t: tier(r) })).filter(x => x.t.k !== 'ok').sort((a, b) => (a.r.days ?? -999) - (b.r.days ?? -999));
+    if (!items.length) return '';
+    const cc = [...new Set(items.map(x => x.t.to).filter(Boolean))];
+    return `<div class="mail"><div class="head">To: <b>${to}</b>${cc.length ? ` · CC: ${cc.map(x => x.replace('+ ', '')).join(', ')}` : ''}<br>Subject: <b>${dept} — ${items.length} certification${items.length > 1 ? 's' : ''} need attention</b></div>
+      <div class="body">Hi, here's this week's certification summary for ${dept}. No reply needed. Please update the tracker once certificates are renewed.
+      <table><tr><th>Team member</th><th>Cert</th><th>Status</th></tr>${items.map(x => `<tr><td>${x.r.name}</td><td>${x.r.cert}</td><td><span class="pill ${x.t.cls}">${x.t.label}</span></td></tr>`).join('')}</table></div></div>`;
+  }).join('');
+  $('mails').innerHTML = html + `<p class="muted" style="font-size:12px">Plus a weekly “all good” check-in to the HR contact, so a quiet week never means the automation stopped.</p>`;
+};
+draw();
+</script>
+</body>
+</html>

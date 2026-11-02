@@ -26,6 +26,8 @@
       --fg-3:       #4a5a6e;
       --muted:      #7a8799;
       --border:     #e8e8e4;
+      --work-bg:    #efede8;
+      --card-line:  #dcd8cf;
       --nav-bg:     rgba(255,255,255,0.96);
       --nav-border: #e8e8e4;
       --title-col:  #09121f;
@@ -40,6 +42,8 @@
       --fg-3:       #7a95ab;
       --muted:      #556980;
       --border:     rgba(255,255,255,0.08);
+      --work-bg:    #060e19;
+      --card-line:  rgba(255,255,255,0.12);
       --nav-bg:     rgba(9,18,31,0.97);
       --nav-border: rgba(255,255,255,0.07);
       --title-col:  #dde6f0;
@@ -205,7 +209,7 @@
     .chip:hover { background: rgba(196,162,106,0.28); color: rgba(255,255,255,0.88); }
 
     /* ── BEFORE AND AFTER (top of Projects) ── */
-    .changes { margin: 0 0 40px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg); padding: 22px 28px 8px; }
+    .changes { margin: 0 0 40px; border: 1px solid var(--card-line); border-radius: 16px; background: var(--bg); box-shadow: 0 1px 2px rgba(17,24,39,0.06), 0 8px 28px rgba(17,24,39,0.08); padding: 22px 28px 8px; }
     .changes-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
     .change { display: grid; grid-template-columns: 170px 1fr auto 1fr; align-items: baseline; gap: 1rem;
       padding: 0.9rem 0; border-top: 1px solid var(--border); text-decoration: none; color: inherit; }
@@ -542,7 +546,7 @@
     }
 
     /* ── FEATURED WORK ── */
-    #work { background: var(--bg-alt); padding: 80px 0; }
+    #work { background: var(--work-bg); padding: 80px 0; }
     .work-grid { display: grid; gap: 40px; }
     .work-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 28px 28px; }
     @media (max-width: 640px) { .work-shots { grid-template-columns: 1fr; } }
@@ -552,12 +556,16 @@
     .work-shot span { position: absolute; left: 10px; bottom: 10px; line-height: 1; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; background: rgba(13,24,41,.85); color: #fff; padding: 5px 8px; border-radius: 6px; }
     .work-shot.single { border: 0; border-bottom: 1px solid var(--border); border-radius: 0; aspect-ratio: 16 / 9.5; }
     .work-shot.single img { height: 100%; object-fit: cover; object-position: top left; }
+    .built { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 14px; }
+    .built b { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+    .built span { font-size: 11.5px; color: var(--fg-2); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 2px 9px; }
     .work-pair { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; }
     @media (max-width: 860px) { .work-pair { grid-template-columns: 1fr; } }
     .work-pair .work-card { display: flex; flex-direction: column; }
     .work-pair .work-card-header { flex-direction: column; flex: 1; }
     .work-pair .work-open-btn { margin-top: auto; }
-    .work-card { background: var(--bg); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    .work-card { background: var(--bg); border: 1px solid var(--card-line); border-radius: 16px; overflow: hidden; box-shadow: 0 1px 2px rgba(17,24,39,0.06), 0 8px 28px rgba(17,24,39,0.08); transition: box-shadow .2s, transform .2s; }
+    .work-card:hover { box-shadow: 0 2px 4px rgba(17,24,39,0.08), 0 14px 36px rgba(17,24,39,0.12); transform: translateY(-2px); }
     .work-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 28px 28px 20px; }
     .work-tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); background: rgba(196,162,106,0.12); border: 1px solid var(--gold-line); border-radius: 4px; padding: 3px 8px; margin-bottom: 10px; }
     .work-card-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
@@ -832,7 +840,7 @@
   <div class="container">
     <p class="section-label">Selected Work</p>
     <h2 class="section-title fade-in">Projects</h2>
-    <p class="summary-text fade-in" style="margin-bottom:32px">Tools I've built for the hotels I support. Each demo below is a stand-alone recreation with a fictional hotel and sample data, so you can click through how it works.</p>
+    <p class="summary-text fade-in" style="margin-bottom:32px">Tools I've built for the hotels I support. Each demo below is a stand-alone recreation with a fictional hotel and sample data, so you can click through how it works. I build them with AI-assisted development and test them against real reports before they go live.</p>
     <div class="changes fade-in">
       <p class="changes-label">Before and after</p>
       <a class="change" href="#proj-ordinance">
@@ -863,6 +871,7 @@
             <h3>F&amp;B Forecast App</h3>
             <p>Our F&amp;B forecast used to live in a large, multi-tab Excel workbook. It did the math, but it was fragile: one deleted formula could quietly break the numbers, setting it up for each outlet took a lot of manual work, and only one person could safely edit it at a time.</p>
             <p style="margin-top:10px">So I rebuilt it as a browser-based app. It shows revenue and covers by outlet and by day, updates as actuals come in, lets several managers work at once, and has a Power Apps version for phones. Today 12 managers across 6 outlets use it.</p>
+          <div class="built"><b>Built with</b><span>HTML</span><span>JavaScript</span><span>Chart.js</span><span>Excel import (SheetJS)</span><span>SharePoint / OneDrive sync</span><span>Power Apps</span><span>Power Automate</span></div>
           </div>
           <a href="fnb-forecast.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
         </div>
@@ -880,6 +889,7 @@
             <span class="work-tag">Live Demo · Sample Data</span>
             <h3>LA Hotel Worker Ordinance Generator</h3>
             <p>Los Angeles requires hotels to track each room attendant's daily workload and pay extra when they go over the city's limits. That meant someone spent 4–5 hours every day matching housekeeping reports against timecards by hand.</p><p style="margin-top:10px">I built a browser tool that does it in minutes: drop in the three daily reports, and it works out each attendant's rooms, square footage and pay, double-checks the math, and flags anything that doesn't line up. It saves more than 1,000 hours a year.</p>
+          <div class="built"><b>Built with</b><span>HTML</span><span>JavaScript</span><span>Excel import/export (SheetJS, ExcelJS)</span><span>PDF parsing (PDF.js)</span><span>Runs in the browser, no server</span></div>
           </div>
           <a href="ordinance.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
         </div>
@@ -891,6 +901,7 @@
             <span class="work-tag">Simulated Run · Sample Data</span>
             <h3>Daily &amp; Weekly Labor Report Automation</h3>
             <p>Every morning someone had to pull labor data from the workforce system, paste it into the report template, save a PDF and email it out.</p><p style="margin-top:10px">Now a script does the whole run on its own and leaves an email draft ready to send. The weekly report alone saves 35+ hours a year, and a configurable version lets other hotels run the daily report too.</p>
+          <div class="built"><b>Built with</b><span>Python</span><span>Selenium</span><span>Playwright</span><span>Excel automation</span><span>Outlook</span><span>Batch scripts</span></div>
           </div>
           <a href="labor-report.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
         </div>
@@ -902,6 +913,7 @@
             <span class="work-tag">Live Demo · Sample Data</span>
             <h3>Culinary Pre-Sheet Builder</h3>
             <p>Banquet pre-sheets used to be put together by hand every day. This tool pairs a shared menu database with a pre-sheet builder, so the kitchen gets a clean, consistent sheet in a few clicks.</p><p style="margin-top:10px">It saves about 25 minutes a day in slower weeks and several hours in busier ones.</p>
+          <div class="built"><b>Built with</b><span>HTML</span><span>JavaScript</span><span>Firebase real-time database</span></div>
           </div>
           <a href="presheet.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
         </div>
@@ -913,8 +925,35 @@
             <span class="work-tag">Live Demo · Sample Data</span>
             <h3>Meal Break &amp; Attestation Audit</h3>
             <p>California has strict meal break rules, and catching a late or missed break after payroll closes is expensive.</p><p style="margin-top:10px">This audit checks every timecard for missed, late or short meal breaks, accounts for signed waivers, and gives managers a short list to review before payroll runs.</p>
+          <div class="built"><b>Built with</b><span>PowerShell</span><span>HTML</span><span>JavaScript</span><span>Excel</span></div>
           </div>
           <a href="meal-break-audit.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
+        </div>
+      </div>
+      <div class="work-card fade-in" id="proj-callqueue">
+        <a class="work-shot single" href="call-queue.html" target="_blank"><img src="img-call-queue.jpg" alt="Guest Services call queue dashboard with abandon rate, hourly heatmap and agent table (sample data)" loading="lazy"></a>
+        <div class="work-card-header">
+          <div>
+            <span class="work-tag">Live Demo · Sample Data</span>
+            <h3>Guest Services Call Queue Dashboard</h3>
+            <p>The phone system produces daily PDF reports that are hard to read at a glance, which made it tough to see when guests were giving up on hold.</p>
+            <p style="margin-top:10px">Now you drop in the PDFs and get one view: calls offered, abandon rate against target, which hours lose the most calls, and how each agent is doing. The data stays on the computer; nothing is uploaded.</p>
+            <div class="built"><b>Built with</b><span>HTML</span><span>JavaScript</span><span>PDF parsing (PDF.js)</span><span>SVG charts</span><span>Runs in the browser, no server</span></div>
+          </div>
+          <a href="call-queue.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
+        </div>
+      </div>
+      <div class="work-card fade-in" id="proj-certs">
+        <a class="work-shot single" href="cert-tracker.html" target="_blank"><img src="img-cert-tracker.jpg" alt="Cert tracker with expiring certifications and Monday summary emails (sample data)" loading="lazy"></a>
+        <div class="work-card-header">
+          <div>
+            <span class="work-tag">Live Demo · Sample Data</span>
+            <h3>Certification Expiry Tracker</h3>
+            <p>Managers were tracking food handler and alcohol service certificates in their own Excel and Word files, which made it easy to miss an expiration.</p>
+            <p style="margin-top:10px">I set up one shared workbook and a weekly automation. Every Monday, each department head gets a single email listing what's expiring, what's expired, and who still needs a certificate, with HR copied when something is overdue. It went live at Hilton Anaheim in October 2026 and is set up so other hotels can run it too.</p>
+            <div class="built"><b>Built with</b><span>Excel</span><span>Office Scripts</span><span>Power Automate</span><span>SharePoint</span><span>Outlook shared mailbox</span></div>
+          </div>
+          <a href="cert-tracker.html" target="_blank" class="work-open-btn">Open Demo ↗</a>
         </div>
       </div>
       </div>
