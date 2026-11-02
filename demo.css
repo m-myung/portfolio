@@ -5,11 +5,10 @@
   --good: #1f9d6a; --good-bg: #e6f6ef; --warn: #b7791f; --warn-bg: #fdf3e1; --bad: #c2413b; --bad-bg: #fbe9e8;
   --blue: #3b6fd8; --teal: #1aa6a0; --violet: #7c5cd6; --orange: #e0823d; --pink: #d6577f;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0b1220; --card: #121c2e; --fg: #e3e9f2; --muted: #93a0b5; --line: #24324a;
-    --good-bg: #123327; --warn-bg: #3a2c12; --bad-bg: #3a1716; --gold-dim: rgba(196,162,106,.18);
-  }
+/* Dark only when the visitor chose dark on the main portfolio page */
+:root[data-theme="dark"] {
+  --bg: #0b1220; --card: #121c2e; --fg: #e3e9f2; --muted: #93a0b5; --line: #24324a;
+  --good-bg: #123327; --warn-bg: #3a2c12; --bad-bg: #3a1716; --gold-dim: rgba(196,162,106,.18);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.5; }
