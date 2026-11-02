@@ -57,3 +57,4 @@ td.num, th.num { text-align: right; }
 .grid > * { min-width: 0; }
 input, select { max-width: 100%; min-width: 0; }
 @media (max-width: 520px) { .form { grid-template-columns: 1fr !important; } .top .badge { margin-left: 0; } }
+[hidden] { display: none !important; }
